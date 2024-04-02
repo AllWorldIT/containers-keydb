@@ -1,0 +1,14 @@
+include:
+  - project: 'gitlab/templates/containers'
+    ref: main
+    file: '/default.yml'
+
+
+test-with-password:
+  stage: test
+  needs:
+    - build
+    - test
+  script:
+    - docker pull "${PIPELINE_IMAGE}"
+    - docker run --rm -e FDC_CI=true -e REDIS_PASSWORD=testpass "${PIPELINE_IMAGE}"
