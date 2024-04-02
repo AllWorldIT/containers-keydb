@@ -30,7 +30,7 @@ chown root:keydb /etc/keydb/keydb.conf
 fdc_notice "Initializing KeyDB settings"
 
 # Default o using REDIS_PASSWORD if KEYDB_PASSWORD is not set
-export KEYDB_PASSWORD=${REDIS_PASSWORD:-$REDIS_PASSWORD}
+export KEYDB_PASSWORD=${KEYDB_PASSWORD:-$REDIS_PASSWORD}
 
 # Setup the password
 if [ -n "$KEYDB_PASSWORD" ] || [ -e /etc/keydb/users.acl ]; then
