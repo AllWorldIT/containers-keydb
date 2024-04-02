@@ -22,6 +22,8 @@
 
 fdc_test_start keydb "Testing KeyDB..."
 
+KEYDB_PASSWORD=${KEYDB_PASSWORD:-$REDIS_PASSWORD}
+
 if [ -n "$KEYDB_PASSWORD" ]; then
 	fdc_test_progress keydb "Testing with password"
 	export REDISCLI_AUTH=$KEYDB_PASSWORD
