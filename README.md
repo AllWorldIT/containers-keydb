@@ -59,10 +59,6 @@ Additional environment variables are available from...
 
 Set a password for KeyDB. By default there is no password.
 
-## KEYDB_INCLUDE_FILE
-
-Configuration file to include with custom configuration options. One could use ``/etc/keydb/local/custom.conf``.
-
 
 
 # Volumes
@@ -84,7 +80,8 @@ KeyDB port 6379 is exposed.
 
 Configuration files of note can be found below...
 
-| Path                  | Description              |
-|-----------------------|--------------------------|
-| /etc/keydb/keydb.conf | Main KeyDB configuration |
-| /etc/keydb/users.acl  | KeyDB ACL configuration  |
+| Path                    | Description              |
+|-------------------------|--------------------------|
+| /etc/keydb/keydb.conf   | Main KeyDB configuration |
+| /etc/keydb/keydb/conf.d | Custom configuration     |
+| /etc/keydb/users.acl    | KeyDB ACL configuration  |
