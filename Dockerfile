@@ -60,15 +60,16 @@ RUN set -eux; \
 	. /etc/buildflags; \
 	\
 	true "Build KeyDB..."; \
-	make -j$(nproc) -l 8; \
-	true "Install KeyDB..."; \
 	KEYDB_DESTDIR=/build/keydb-root; \
-	KEYDB_ROOT=/usr/local; \
+	KEYDB_ROOT=/opt/keydb; \
+	make -j$(nproc) -l 8 V=1 \
+		PREFIX="$KEYDB_ROOT"; \
+	true "Install KeyDB..."; \
 	make -j$(nprocs) \
-		PREFIX="$KEYDB_DESTDIR/$KEYDB_ROOT" \
+		PREFIX="$KEYDB_DESTDIR$KEYDB_ROOT" \
 		install; \
 	mkdir -p "$KEYDB_DESTDIR/var/lib/keydb"; \
-	mkdir -p "$KEYDB_DESTDIR/etc/keydb"; \
+	mkdir -p "$KEYDB_DESTDIR/etc/keydb/conf.d"; \
 	cp -v keydb.conf "$KEYDB_DESTDIR/etc/keydb/"; \
 	touch "$KEYDB_DESTDIR/etc/keydb/users.acl"
 
@@ -107,22 +108,27 @@ RUN set -eux; \
 	true "Cleanup"; \
 	rm -f /var/cache/apk/*
 
-# Disable listening on only localhost
+# include /path/to/fragments/*.conf
 RUN set -eux; \
+	# Disable listening on only localhost
 	sed -ire 's,^bind \(.*\),#bind\1,' /etc/keydb/keydb.conf; \
-	grep -E '^#bind' /etc/keydb/keydb.conf
-# Set PID file
-RUN set -eux; \
+	grep -E '^#bind' /etc/keydb/keydb.conf; \
+	# Set PID file
 	sed -ire 's,^pidfile \(.*\),pidfile /run/keydb.pid,' /etc/keydb/keydb.conf; \
-	grep -E '^pidfile /run/keydb.pid' /etc/keydb/keydb.conf
-# Set working dir
-RUN set -eux; \
+	grep -E '^pidfile /run/keydb.pid' /etc/keydb/keydb.conf; \
+	# Set working dir
 	sed -ire 's,^dir \(.*\),dir /var/lib/keydb/,' /etc/keydb/keydb.conf; \
-	grep -E '^dir /var/lib/keydb/' /etc/keydb/keydb.conf
-# Set ACL file location
-RUN set -eux; \
+	grep -E '^dir /var/lib/keydb/' /etc/keydb/keydb.conf; \
+	# Set ACL file location
 	sed -ire 's,^# \(aclfile /etc/keydb/users.acl\),\1,' /etc/keydb/keydb.conf; \
-	grep -E '^aclfile /etc/keydb/users\.acl' /etc/keydb/keydb.conf
+	grep -E '^aclfile /etc/keydb/users\.acl' /etc/keydb/keydb.conf; \
+	# Disable protected mode by default
+	sed -ire 's,^protected-mode yes,protected-mode no,' /etc/keydb/keydb.conf; \
+	grep -E '^protected-mode no' /etc/keydb/keydb.conf; \
+	# Remove temp config file
+	rm -f /etc/keydb/keydb.confire; \
+	# Setup blank include file to prevent fatal startup error when none are specified
+	touch /etc/keydb/conf.d/00-default.conf
 
 # KeyDB
 COPY etc/supervisor/conf.d/keydb.conf /etc/supervisor/conf.d/keydb.conf
@@ -140,11 +146,13 @@ RUN set -eux; \
 	chown root:keydb \
 		/etc/keydb \
 		/etc/keydb/keydb.conf \
+		/etc/keydb/conf.d \
 		/var/lib/keydb; \
 	chmod 0640 \
 		/etc/keydb/keydb.conf; \
-	chmod 0750 \
-		/etc/keydb; \
+	chmod 0755 \
+		/etc/keydb \
+		/etc/keydb/conf.d; \
 	chmod 0770 \
 		/var/lib/keydb; \
 	fdc set-perms
