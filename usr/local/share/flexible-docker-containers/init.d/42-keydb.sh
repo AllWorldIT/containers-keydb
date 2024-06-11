@@ -26,6 +26,12 @@ chmod 0770 /var/lib/keydb
 # Fix main config perms
 chmod 0640 /etc/keydb/keydb.conf
 chown root:keydb /etc/keydb/keydb.conf
+# Fix additional config perms
+find /etc/keydb/conf.d -type f -exec chmod 0640 {} \;
+find /etc/keydb/conf.d -type f -exec chown root:keydb {} \;
+
+# Set path to KeyDB
+export PATH="/opt/keydb/bin:$PATH"
 
 fdc_notice "Initializing KeyDB settings"
 
@@ -44,3 +50,11 @@ fi
 
 chmod 0640 /etc/keydb/users.acl
 chown root:keydb /etc/keydb/users.acl
+
+# Add additional config file includes to main file
+echo >> /etc/keydb/keydb.conf
+echo "# Include additional config files" >> /etc/keydb/keydb.conf
+find /etc/keydb/conf.d -type f | while read -r file; do
+	fdc_info "Including $file"
+	echo "include $file" >> /etc/keydb/keydb.conf
+done
